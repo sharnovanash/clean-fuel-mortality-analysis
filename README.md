@@ -1,84 +1,57 @@
-# Clean Cooking Fuel Access and Air Pollution Mortality
+# Clean Fuel, Cleaner Air, Fewer Deaths
 
-Does access to clean cooking fuels and technologies go with lower death rates from air pollution? Merged two World Health Organization (WHO) datasets for **179 countries (2016)**. Tests that relationship with linear, logarithmic and multiple regression models.
+Measured how clean cooking fuel affects air-pollution deaths across **179 countries** using WHO data.
+
+**Result:** Each extra point of clean-fuel access goes with **1.7 fewer deaths per 100k**. Fuel access alone explains **73%** of the gap between countries.
+
+`Python` · `pandas` · `statsmodels` · `seaborn` · `SQL`
+
+![Clean fuel access vs death rate](figures/03_linear_fit_by_continent.png)
+
+## Process
+
+| Step | What I did |
+|---|---|
+| **Defined** | Asked how a country's clean-fuel access relates to its air-pollution death rate. |
+| **Merged** | Joined two [WHO datasets](https://www.kaggle.com/datasets/utkarshxy/who-worldhealth-statistics-2020-complete) on country + year in [Python](src/01_merge_data.py) and [SQL](sql/merge_tables.sql). Mapped each country to a continent. |
+| **Parsed** | Extracted numbers from WHO text values like `"95.12 [85.12-104.3]"`. |
+| **Deduplicated** | Found 36 rows per country (2 measures × 3 sexes × 6 causes). Kept one age-standardized total per country. Raised R² from 0.14 to 0.73. |
+| **Explored** | Compared death rates by continent. Africa's median (162) is 7× Europe's (24). |
+| **Modeled** | Tested linear, logarithmic and multiple regression. |
+
+## Models
+
+| Model | R² | AIC | Fuel effect |
+|---|---|---|---|
+| Linear | 0.73 | 1809 | −1.69 per point |
+| Logarithmic | 0.65 | 1856 | −56.1 per log unit |
+| **Linear + continent** | **0.79** | **1775** | −1.50 per point |
+
+All fuel effects are significant (p < 0.001).
 
 ![Linear vs logarithmic fit](figures/06_linear_vs_log_fit.png)
 
-## Key findings
+## Findings
 
-| Model | R² | AIC | Key coefficient |
-|---|---|---|---|
-| Linear: `Death_Rate ~ Fuel_Access` | 0.732 | 1809 | −1.69 deaths per 100k per +1 pt of access (p < 0.001) |
-| Log-linear: `Death_Rate ~ log(1 + Fuel_Access)` | 0.651 | 1856 | −56.1 per unit of log access (p < 0.001) |
-| Multiple: `Death_Rate ~ Fuel_Access + Continent` | 0.791 | 1775 | −1.50 per +1 pt of access, controlling for continent (p < 0.001) |
+**Rejected the null.** Higher clean-fuel access means significantly lower mortality.
 
-- **Strong negative association.** Each extra percentage point of the population relying on clean fuels goes with about **1.7 fewer air-pollution deaths per 100,000 people**. Clean-fuel access alone explains about 73% of the variation between countries.
-- **The linear model fits better than the logarithmic one.** It has a higher R² and a lower AIC and BIC. The data do not strongly support a "diminishing returns" curve: the benefit continues across the whole 0–100% range.
-- **Region still matters.** With fuel access held constant, Europe, the Americas and Oceania have significantly lower death rates than Africa. Asia does not differ significantly from Africa. Adding continent raises R² to 0.79, so other regional factors also play a part, such as outdoor air pollution and access to health care.
+**Ruled out diminishing returns.** The log model fit worse. Gains hold at every level of access.
 
-*These are cross-sectional correlations. They do not prove that clean fuel causes lower mortality.*
+**Controlled for region.** Fuel stays the strongest driver. Oceania, the Americas and Europe still show lower death rates than Africa at the same access level.
 
-## Project structure
+![Regression coefficients](figures/09_multiple_regression_coefficients.png)
 
-```
-.
-├── data/
-│   ├── raw/                         # Original WHO exports (unchanged)
-│   │   ├── airPollutionDeathRate.csv
-│   │   └── cleanFuelAndTech.csv
-│   └── processed/
-│       └── merged_data_by_continent.csv   # Created by 01_merge_data.py
-├── src/
-│   ├── config.py                    # Paths and analysis settings
-│   ├── data_utils.py                # Shared loading/cleaning helpers
-│   ├── continents.py                # Country -> continent lookup
-│   ├── 01_merge_data.py             # Merge datasets and add continent
-│   ├── 02_eda_boxplot.py            # Death-rate distribution by continent
-│   ├── 03_linear_regression.py      # Simple OLS + LOWESS smoother
-│   ├── 04_log_regression.py         # Log-linear model (outliers removed)
-│   ├── 05_model_comparison.py       # Linear vs log: metrics, fit, residuals
-│   ├── 06_multiple_regression.py    # OLS with continent controls
-│   └── check_continent_mapping.py   # Lists any unmapped countries
-├── sql/
-│   └── merge_tables.sql             # Same merge written in SQL
-├── figures/                         # All generated charts (PNG)
-├── results/                         # Regression summaries (TXT)
-├── run_all.py                       # Runs the whole pipeline
-└── requirements.txt
-```
+**Key lesson:** Checking the data's structure mattered more than model choice. Removing duplicate rows changed which model won.
 
-## Getting started
+**Limits:** One year (2016), correlation only. WHO caps access at 5% and 95%. Income and outdoor pollution not modeled.
+
+## Run it
 
 ```bash
 git clone https://github.com/<your-username>/<repo-name>.git
 cd <repo-name>
-
-python -m venv .venv
-source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-
-python run_all.py                # or run any script in src/ on its own
+python run_all.py
 ```
 
-The charts are saved to `figures/` and the model summaries to `results/`.
-
-## Data
-
-| File | Source | Description |
-|---|---|---|
-| `airPollutionDeathRate.csv` | WHO Global Health Observatory | Deaths per 100,000 people attributed to outdoor and household air pollution, 2016. Includes crude and age-standardized rates, by sex and cause. |
-| `cleanFuelAndTech.csv` | WHO Global Health Observatory | Share of the population that relies mainly on clean fuels and technologies for cooking (%), multiple years. |
-
-The two files are joined on country and year. Only 2016 appears in both, so the analysis covers a single year.
-
-### Cleaning decisions
-
-- **One row per country.** The death-rate file has 36 rows for each country: 2 indicators × 3 sex groups × 6 causes. The analysis keeps the **age-standardized, both-sexes, all-causes** rate. Age standardization lets countries with different age structures be compared fairly. You can change this in `src/config.py`: set `INDICATOR_FILTER = CRUDE` to use the crude rate, or `TOTALS_ONLY = False` to pool every row.
-- **Point estimates.** WHO values such as `95.12 [85.12-104.3]` are reduced to the point estimate (`95.12`). The uncertainty interval is dropped.
-- **Outliers.** The box plot uses a 1.0 × IQR filter for display, and the log model uses a 1.5 × IQR filter. The other models use every country.
-
-## Limitations
-
-- **Single year (2016), cross-sectional.** The results show association, not causation.
-- **Capped values.** WHO caps fuel access at 95% and 5%: countries above or below those levels are recorded as exactly 95 or 5. This creates the vertical clusters at both ends of the scatter plots and hides differences among high-access countries.
-- **Confounders not modeled.** Income, urbanization, outdoor PM2.5 levels and health-care access all affect mortality. Continent dummies capture only part of this.
+Outputs charts to `figures/` and regression summaries to `results/`.
