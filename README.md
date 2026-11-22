@@ -2,9 +2,9 @@
 
 ## Project Description
 
-Measured how access to clean cooking fuel relates to air-pollution death rates across 179 countries using World Health Organization (WHO) data. The question was simple: do countries where more people cook with clean fuel see fewer deaths from air pollution?
+Cross-sectional regression analysis of WHO data for 179 countries (2016), estimating the relationship between clean cooking-fuel access and age-standardized air-pollution mortality. Each percentage point of access is associated with 1.69 fewer deaths per 100k (R² = 0.73, p < 0.001). Adding continent fixed effects raises R² to 0.79.
 
-The short answer is yes. Each extra percentage point of clean-fuel access goes with 1.7 fewer deaths per 100,000 people, and fuel access alone explains 73% of the variation between countries.
+Stack: Python (pandas, statsmodels, seaborn), SQL
 
 ![Clean fuel access vs death rate](figures/03_linear_fit_by_continent.png)
 
@@ -12,50 +12,42 @@ The short answer is yes. Each extra percentage point of clean-fuel access goes w
 
 | Step | Process |
 |---|---|
-| Defined | Asked how a country's clean-fuel access relates to its air-pollution death rate. |
-| Merged | Joined two [WHO datasets](https://www.kaggle.com/datasets/utkarshxy/who-worldhealth-statistics-2020-complete) on country + year in [Python](src/01_merge_data.py) and [SQL](merge_tables.sql). Mapped each country to a continent. |
-| Parsed | Extracted numbers from WHO text values like `"95.12 [85.12-104.3]"`. |
-| Deduplicated | Found 36 rows per country (2 measures × 3 sexes × 6 causes). Kept one age-standardized total per country. Raised R² from 0.14 to 0.73. |
-| Explored | Compared death rates by continent. Africa's median (162) is 7× Europe's (24). |
-| Modeled | Tested linear, logarithmic and multiple regression. |
+| Merged | Joined two [WHO datasets](https://www.kaggle.com/datasets/utkarshxy/who-worldhealth-statistics-2020-complete) on country-year keys in [pandas](src/01_merge_data.py) and [SQL](merge_tables.sql). Mapped countries to continents for regional controls. |
+| Parsed | Extracted point estimates from WHO string values with confidence intervals, e.g. `"95.12 [85.12-104.3]"`. |
+| Deduplicated | Found the mortality table stored 36 rows per country (2 measures × 3 sexes × 6 causes). Kept one age-standardized, both-sex, all-cause row per country. R² rose from 0.14 to 0.73. |
+| Explored | Compared mortality distributions by continent. Africa's median (162 per 100k) is 7× Europe's (24). |
+| Modeled | Fit OLS with linear and log-transformed predictors, then a multiple regression with continent dummies. Compared models on R² and AIC. |
 
 ## Models
 
-| Model | R² | AIC | Fuel effect |
+| Model | R² | AIC | Fuel coefficient |
 |---|---|---|---|
 | Linear | 0.73 | 1809 | −1.69 per point |
-| Logarithmic | 0.65 | 1856 | −56.1 per log unit |
-| Linear + continent (best) | 0.79 | 1775 | −1.50 per point |
+| Log-linear | 0.65 | 1856 | −56.1 per log unit |
+| Linear + continent fixed effects (best) | 0.79 | 1775 | −1.50 per point |
 
-All fuel effects are significant (p < 0.001).
+All fuel coefficients are significant at p < 0.001.
 
 ![Linear vs logarithmic fit](figures/06_linear_vs_log_fit.png)
 
 ## Findings
 
-- Higher clean-fuel access means significantly lower mortality, so I rejected the null hypothesis.
-- The log model fit worse, which rules out diminishing returns. Gains hold at every level of access.
-- After controlling for region, fuel stays the strongest driver. Oceania, the Americas and Europe still show lower death rates than Africa at the same access level.
-- The key lesson: checking the data's structure mattered more than model choice. Removing duplicate rows changed which model won.
+- Rejected the null of no association between fuel access and mortality.
+- The log specification fit worse (ΔAIC = +47), so there is no evidence of diminishing returns. The effect is roughly linear across the access range.
+- With continent fixed effects, the fuel coefficient shrinks only from −1.69 to −1.50 and stays the dominant predictor. Oceania, the Americas and Europe have significantly lower mortality than Africa at the same access level.
+- Getting the data to one row per country mattered more than model choice. Removing duplicate rows changed which specification won.
 
 ![Regression coefficients](figures/09_multiple_regression_coefficients.png)
 
 ## Limitations
 
-- The data covers one year (2016) and shows correlation only, not causation.
-- WHO caps reported access at 5% and 95%.
-- Income and outdoor pollution are not modeled.
-
-## Code
-
-- `run_all.py` runs the full pipeline. It produces the charts in `figures/` and the regression summaries as `.txt` files in the main folder.
-- `src/01_merge_data.py` merges and cleans the WHO data.
-- `merge_tables.sql` performs the same merge in SQL.
-- `requirements.txt` lists the Python packages used: pandas, statsmodels and seaborn.
+- Single-year cross-section, so the results are associational, not causal.
+- WHO censors access values at 5% and 95%.
+- Omitted variables include income and ambient (outdoor) pollution.
 
 ## Run It
 
-    git clone https://github.com/<your-username>/<repo-name>.git
-    cd <repo-name>
     pip install -r requirements.txt
     python run_all.py
+
+Outputs figures to `figures/` and regression summaries to `.txt` files in the main folder.
