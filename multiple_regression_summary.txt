@@ -1,0 +1,30 @@
+                            OLS Regression Results                            
+==============================================================================
+Dep. Variable:             Death_Rate   R-squared:                       0.791
+Model:                            OLS   Adj. R-squared:                  0.783
+Method:                 Least Squares   F-statistic:                     108.2
+Date:                Sun, 22 Nov 2026   Prob (F-statistic):           9.83e-56
+Time:                        15:17:28   Log-Likelihood:                -880.46
+No. Observations:                 179   AIC:                             1775.
+Df Residuals:                     172   BIC:                             1797.
+Df Model:                           6                                         
+Covariance Type:            nonrobust                                         
+===========================================================================================
+                              coef    std err          t      P>|t|      [0.025      0.975]
+-------------------------------------------------------------------------------------------
+const                     204.1575      5.379     37.954      0.000     193.540     214.775
+Fuel_Access                -1.4953      0.096    -15.528      0.000      -1.685      -1.305
+Continent_Asia             -2.2666      7.982     -0.284      0.777     -18.022      13.489
+Continent_Europe          -36.0578      9.227     -3.908      0.000     -54.270     -17.846
+Continent_North America   -38.5531     10.197     -3.781      0.000     -58.679     -18.427
+Continent_Oceania         -54.0617     11.659     -4.637      0.000     -77.075     -31.048
+Continent_South America   -27.9101     12.212     -2.285      0.024     -52.015      -3.805
+==============================================================================
+Omnibus:                       18.872   Durbin-Watson:                   2.094
+Prob(Omnibus):                  0.000   Jarque-Bera (JB):               46.401
+Skew:                           0.403   Prob(JB):                     8.40e-11
+Kurtosis:                       5.361   Cond. No.                         472.
+==============================================================================
+
+Notes:
+[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.

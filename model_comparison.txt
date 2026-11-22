@@ -1,0 +1,6 @@
+           Metric    Linear  Log-linear  Change
+        R-squared    0.7325      0.6510 -0.0815
+              AIC 1808.7171   1856.3013 47.5842
+              BIC 1815.0919   1862.6760 47.5842
+    Residual skew    0.6488      0.8288  0.1800
+Residual kurtosis    1.1802      0.8330 -0.3472

@@ -13,7 +13,7 @@ Measured how clean cooking fuel affects air-pollution deaths across **179 countr
 | Step | What I did |
 |---|---|
 | **Defined** | Asked how a country's clean-fuel access relates to its air-pollution death rate. |
-| **Merged** | Joined two [WHO datasets](https://www.kaggle.com/datasets/utkarshxy/who-worldhealth-statistics-2020-complete) on country + year in [Python](src/01_merge_data.py) and [SQL](sql/merge_tables.sql). Mapped each country to a continent. |
+| **Merged** | Joined two [WHO datasets](https://www.kaggle.com/datasets/utkarshxy/who-worldhealth-statistics-2020-complete) on country + year in [Python](src/01_merge_data.py) and [SQL](merge_tables.sql). Mapped each country to a continent. |
 | **Parsed** | Extracted numbers from WHO text values like `"95.12 [85.12-104.3]"`. |
 | **Deduplicated** | Found 36 rows per country (2 measures × 3 sexes × 6 causes). Kept one age-standardized total per country. Raised R² from 0.14 to 0.73. |
 | **Explored** | Compared death rates by continent. Africa's median (162) is 7× Europe's (24). |
@@ -54,4 +54,4 @@ pip install -r requirements.txt
 python run_all.py
 ```
 
-Outputs charts to `figures/` and regression summaries to `results/`.
+Outputs charts to `figures/` and regression summaries to `.txt` files in the main folder.

@@ -1,0 +1,25 @@
+                            OLS Regression Results                            
+==============================================================================
+Dep. Variable:             Death_Rate   R-squared:                       0.651
+Model:                            OLS   Adj. R-squared:                  0.649
+Method:                 Least Squares   F-statistic:                     330.2
+Date:                Sun, 22 Nov 2026   Prob (F-statistic):           2.54e-42
+Time:                        15:17:25   Log-Likelihood:                -926.15
+No. Observations:                 179   AIC:                             1856.
+Df Residuals:                     177   BIC:                             1863.
+Df Model:                           1                                         
+Covariance Type:            nonrobust                                         
+===================================================================================
+                      coef    std err          t      P>|t|      [0.025      0.975]
+-----------------------------------------------------------------------------------
+const             305.4930     12.129     25.187      0.000     281.557     329.429
+Log_Fuel_Access   -56.0840      3.086    -18.172      0.000     -62.175     -49.993
+==============================================================================
+Omnibus:                       20.939   Durbin-Watson:                   2.056
+Prob(Omnibus):                  0.000   Jarque-Bera (JB):               24.649
+Skew:                           0.822   Prob(JB):                     4.44e-06
+Kurtosis:                       3.777   Cond. No.                         15.7
+==============================================================================
+
+Notes:
+[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
